@@ -1,6 +1,6 @@
 # Crystal Lang mDNS Support
 
-[![Build Status](https://travis-ci.com/spider-gazelle/mdns.svg?branch=main)](https://travis-ci.com/github/spider-gazelle/mdns)
+[![Build Status](https://travis-ci.com/spider-gazelle/mdns.svg?branch=master)](https://travis-ci.com/github/spider-gazelle/mdns)
 
 * Discover services using DNS-SD
 
