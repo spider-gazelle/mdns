@@ -16,8 +16,11 @@ module MDNS
     Refused
   end
 
-  IPv4 = Socket::IPAddress.new("224.0.0.251", 5353)
-  IPv6 = Socket::IPAddress.new("FF02::FB", 5353)
+  PORT = 5353
+  IPv4 = Socket::IPAddress.new("224.0.0.251", PORT)
+  IPv6 = Socket::IPAddress.new("FF02::FB", PORT)
 end
 
-require "./message"
+require "./dns/message"
+require "./comms/client"
+require "./comms/server"

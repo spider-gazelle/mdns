@@ -2,24 +2,27 @@ require "./domain_name"
 
 module MDNS
   # https://tools.ietf.org/html/rfc1035#section-3.2.2
+  # https://en.wikipedia.org/wiki/List_of_DNS_record_types
   enum Type
-    MDNS  = 0
-    A     = 1
-    NS
-    MD
-    MF
-    CNAME
-    SOA
-    MB
-    MG
-    MR
-    NULL
-    WKS
-    PTR
-    HINFO
-    MINFO
-    MX
-    TXT
+    MDNS  =  0
+    A     =  1
+    NS    =  2
+    MD    =  3
+    MF    =  4
+    CNAME =  5
+    SOA   =  6
+    MB    =  7
+    MG    =  8
+    MR    =  9
+    NULL  = 10
+    WKS   = 11
+    PTR   = 12
+    HINFO = 13
+    MINFO = 14
+    MX    = 15
+    TXT   = 16
+    RP    = 17
+    AFSDB = 18
 
     # https://tools.ietf.org/html/rfc3596 (ipv6)
     AAAA = 28
@@ -80,8 +83,10 @@ module MDNS
       case type
       when Type::A
         data.map(&.to_s(10)).join(".")
+      when Type::AAAA
+        data.map(&.to_s(16)).in_groups_of(2).map(&.compact).map(&.map(&.rjust(2, '0')).join("")).join(":")
       else
-        raise "unknown format for type: #{type}"
+        raise "unknown address format for type: #{type}"
       end
     end
   end

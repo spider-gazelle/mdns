@@ -1,5 +1,5 @@
-require "./mdns"
-require "./message/query_resource"
+require "../mdns"
+require "./query_resource"
 
 module MDNS
   # https://tools.ietf.org/html/rfc1035#page-26
@@ -30,12 +30,21 @@ module MDNS
     array queries : Query, length: ->{ query_count }
     array answers : Resource, length: ->{ answer_count }
 
-    def query(domain : String, type : Type = Type::A, klass : Klass = Klass::Internet)
+    def query(domain : String, type : Type = Type::PTR, klass : Klass = Klass::Internet, unicast_response : Bool = false)
       q = Query.new
       q.type = type
       q.klass = klass
       q.domain_name = domain
+      q.unicast_response = unicast_response
       queries << q
+    end
+
+    def response?
+      is_response
+    end
+
+    def query?
+      !is_response
     end
   end
 end
