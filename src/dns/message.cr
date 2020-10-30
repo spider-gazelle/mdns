@@ -1,5 +1,6 @@
 require "../mdns"
-require "./query_resource"
+require "./query"
+require "./resource"
 
 module MDNS
   # https://tools.ietf.org/html/rfc1035#page-26
@@ -24,16 +25,18 @@ module MDNS
 
     uint16 :query_count, value: ->{ queries.size }
     uint16 :answer_count, value: ->{ answers.size }
-    uint16 :authority_record_count
-    uint16 :additional_record_count
+    uint16 :name_server_count, value: ->{ name_servers.size }
+    uint16 :additional_record_count, value: ->{ additional.size }
 
     array queries : Query, length: ->{ query_count }
     array answers : Resource, length: ->{ answer_count }
+    array name_servers : Resource, length: ->{ name_server_count }
+    array additional : Resource, length: ->{ additional_record_count }
 
-    def query(domain : String, type : Type = Type::PTR, klass : Klass = Klass::Internet, unicast_response : Bool = false)
+    def query(domain : String, type : Type = Type::PTR, record_class : RecordClass = RecordClass::Internet, unicast_response : Bool = false)
       q = Query.new
       q.type = type
-      q.klass = klass
+      q.record_class = record_class
       q.domain_name = domain
       q.unicast_response = unicast_response
       queries << q
@@ -45,6 +48,15 @@ module MDNS
 
     def query?
       !is_response
+    end
+
+    # This is used for lazily decompressing the domain strings
+    def set_io(io : IO::Memory)
+      queries.each(&.original_io = io)
+      answers.each(&.original_io = io)
+      name_servers.each(&.original_io = io)
+      additional.each(&.original_io = io)
+      self
     end
   end
 end

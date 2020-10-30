@@ -39,7 +39,7 @@ require "mdns"
 # Look up homekit devices on the network
 results = MDNS.one_shot "_hap._tcp.local"
 
-results.each do |(address, _io_memory, response)|
+results.each do |(address, response)|
   address # => Socket::IPAddress
   response # => MDNS::Message
 
@@ -65,14 +65,12 @@ results = MDNS.one_shot do |message|
 end
 
 # You will need to inspect the answers to differentiate between devices and hubs
-results.each do |(address, io_memory, response)|
+results.each do |(address, response)|
   is_hap = false
   is_kit = false
 
   response.answers.each do |answer|
-    # NOTE:: when extracting the domain name the whole raw response is required
-    # due to domain name compression: https://tools.ietf.org/html/rfc1035#section-4.1.4
-    domain_name = answer.domain_name(io_memory)
+    domain_name = answer.domain_name
 
     if domain_name == "_hap._tcp.local"
       is_hap = true
@@ -96,11 +94,12 @@ results = MDNS.one_shot "Steves-iPhone.local", type: MDNS::Type::A
 
 if address_response = results.first?
   # NOTE:: the `_address` here is the device that responded, it might not be an
-  # an authoritative answer (i.e. something replying on behalf of the device)
-  # so extract the IP address from the payload (mDNS only, for DNS-SD use the `_address`)
-  _address, _io_memory, response = address_response
+  # authoritative answer (i.e. something replying on behalf of the device) so
+  # extract the IP address from the payload (mDNS only, for DNS-SD use the `_address`)
+  _address, response = address_response
 
-  response.answers[0].address # => "192.168.40.150"
+  # This is assuming answers[0] is an A or AAAA record
+  response.answers[0].payload.as(Socket::IPAddress).address # => "192.168.40.150"
 end
 
 ```
@@ -118,7 +117,7 @@ require "mdns"
 server = MDNS::Server.new(MDNS::IPv4)
 loop do
   break if server.closed?
-  address, io_memory, message = server.receive
+  address, message = server.receive
 
   if message.query?
     # process a query here
@@ -129,21 +128,13 @@ loop do
   # This code prints the details of the message
   puts Time.utc.to_s("%X")
   puts "QUERY:"
-  puts message.queries.map(&.domain_name(io_memory)).join("\n")
+  puts message.queries.map(&.domain_name).join("\n")
   puts "ANSWERS:"
   puts message.answers.map { |answer|
     String.build do |str|
-      str << answer.domain_name(io_memory)
+      str << answer.domain_name
       str << " => "
-      case answer.type
-      when MDNS::Type::A, MDNS::Type::AAAA
-        str << answer.address
-      when MDNS::Type::PTR
-        str << address.address
-        str << " (PTR)"
-      else
-        str << answer.type.to_s
-      end
+      str << answer.payload.inspect
     end
   }.join("\n")
   puts "\n\n\n"

@@ -1,6 +1,8 @@
 require "../mdns"
 
 module MDNS
+  # A single component of the domain name.
+  # i.e. `.com`
   class DomainNameComponent < BinData
     endian big
 
@@ -30,15 +32,19 @@ module MDNS
         pointer = (size.to_i32 << 8) | pointer_low.to_i32
         io.pos = pointer
         components = io.read_bytes(DomainNamePointer)
-        components.domain_name(io)
+        components.original_io = io
+        components.domain_name
       else
         name
       end
     end
   end
 
+  # The list of components that make up a domain name
   class DomainNamePointer < BinData
     endian big
+
+    property original_io : IO::Memory? = nil
 
     variable_array raw_domain_name : DomainNameComponent, read_next: ->{
       if name = raw_domain_name[-1]?
@@ -48,13 +54,13 @@ module MDNS
       end
     }
 
-    def domain_name
-      raw_domain_name.map(&.name).reject(&.empty?).join('.')
-    end
-
     # will work with compressed versions
-    def domain_name(query : IO::Memory)
-      raw_domain_name.map(&.get_name(query)).reject(&.empty?).join('.')
+    def domain_name
+      if io = original_io
+        raw_domain_name.map(&.get_name(io)).reject(&.empty?).join('.')
+      else
+        raw_domain_name.map(&.name).reject(&.empty?).join('.')
+      end
     end
 
     def domain_name=(name)
@@ -63,6 +69,7 @@ module MDNS
         component.name = part
         component
       end
+      # ends with a blank component
       self.raw_domain_name << DomainNameComponent.new
       name
     end

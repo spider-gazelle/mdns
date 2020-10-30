@@ -45,7 +45,7 @@ class MDNS::Server
     nil
   end
 
-  def query(domain : String, type : Type = Type::PTR, klass : Klass = Klass::Internet)
+  def query(domain : String, type : Type = Type::PTR, klass : RecordClass = RecordClass::Internet)
     query(&.query(domain, type, klass))
   end
 end

@@ -4,7 +4,7 @@ require "socket"
 module MDNS
   DEFAULT_WAIT_TIME = 2.seconds
 
-  alias MessageChannel = Channel(Tuple(Socket::IPAddress, IO::Memory, MDNS::Message))
+  alias MessageChannel = Channel(Tuple(Socket::IPAddress, MDNS::Message))
 
   # you can configure the query in the provided block
   def self.one_shot(wait : Time::Span = DEFAULT_WAIT_TIME, family : Socket::Family = Socket::Family::INET)
@@ -25,7 +25,7 @@ module MDNS
       socket.send(request, family.inet? ? MDNS::IPv4 : MDNS::IPv6)
 
       # grab results
-      responses = [] of Tuple(Socket::IPAddress, IO::Memory, MDNS::Message)
+      responses = [] of Tuple(Socket::IPAddress, MDNS::Message)
       loop do
         select
         when size_address = channel.receive
@@ -42,7 +42,7 @@ module MDNS
     end
   end
 
-  def self.one_shot(domain : String, wait : Time::Span = DEFAULT_WAIT_TIME, type : Type = Type::PTR, klass : Klass = Klass::Internet, family : Socket::Family = Socket::Family::INET)
+  def self.one_shot(domain : String, wait : Time::Span = DEFAULT_WAIT_TIME, type : Type = Type::PTR, klass : RecordClass = RecordClass::Internet, family : Socket::Family = Socket::Family::INET)
     one_shot(wait, family, &.query(domain, type, klass, unicast_response: true))
   end
 
@@ -53,9 +53,12 @@ module MDNS
       break if socket.closed? || channel.closed?
       size, address = socket.receive(buffer)
       break if size == 0
-      io = IO::Memory.new(buffer[0...size])
-      response = io.read_bytes(MDNS::Message)
-      channel.send({address, io, response})
+
+      # The original `io` is required for decompressing the domain names strings
+      # hence why we make a clone of the buffer and set `original_io`
+      io = IO::Memory.new(buffer[0...size].clone)
+      response = io.read_bytes(MDNS::Message).set_io(io)
+      channel.send({address, response})
     end
   rescue IO::Error
   ensure
