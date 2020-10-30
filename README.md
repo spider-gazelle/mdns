@@ -28,6 +28,32 @@ mDNS is used to find the IP address of device, like a Raspberry Pi
 As described in [the rfc](https://tools.ietf.org/html/rfc6762#section-5.1)
 
 
+### mDNS query
+
+If we are looking for the IP address of a device for instance.
+
+```crystal
+
+# We're requesting the IPv4 address of the phone (A record)
+# We could also do a multi-request and get the IPv6 address too (AAAA record)
+results = MDNS.one_shot "Steves-iPhone.local", type: MDNS::Type::A
+
+if address_response = results.first?
+  # NOTE:: the `_address` here is the device that responded, it might not be an
+  # authoritative answer (i.e. something replying on behalf of the device) so
+  # extract the IP address from the payload (mDNS only, for DNS-SD use the `_address`)
+  _address, response = address_response
+
+  # This is assuming answers[0] is an A or AAAA record
+  response.answers[0].payload.as(Socket::IPAddress).address # => "192.168.40.150"
+end
+
+```
+
+Another common request, if you want the port of the service, is the SRV query.
+Use the SRV query in tandem with the DNS-SD request described below
+
+
 ### Simple DNS-SD query
 
 To perform a simple query for a service on the network
@@ -48,6 +74,9 @@ results.each do |(address, response)|
   response.response_code # => ResponseCode::NoError
   response.answer_count # => 1
   response.answers # => Array(MDNS::Resource)
+
+  # The answers will most likely be PTRs to the devices local domain names
+  # Then you can perform a SRV query for the service details of the pointer
 end
 
 ```
@@ -82,28 +111,6 @@ end
 
 ```
 
-### mDNS query
-
-If we are looking for the IP address of a device for instance.
-
-```crystal
-
-# We're requesting the IPv4 address of the phone (A record)
-# We could also do a multi-request and get the IPv6 address too (AAAA record)
-results = MDNS.one_shot "Steves-iPhone.local", type: MDNS::Type::A
-
-if address_response = results.first?
-  # NOTE:: the `_address` here is the device that responded, it might not be an
-  # authoritative answer (i.e. something replying on behalf of the device) so
-  # extract the IP address from the payload (mDNS only, for DNS-SD use the `_address`)
-  _address, response = address_response
-
-  # This is assuming answers[0] is an A or AAAA record
-  response.answers[0].payload.as(Socket::IPAddress).address # => "192.168.40.150"
-end
-
-```
-
 
 ## Continuous Multicast DNS Querying
 
@@ -133,7 +140,7 @@ loop do
   puts message.answers.map { |answer|
     String.build do |str|
       str << answer.domain_name
-      str << " => "
+    	str << " => (#{answer.type}) "
       str << answer.payload.inspect
     end
   }.join("\n")

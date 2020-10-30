@@ -96,14 +96,22 @@ module MDNS
       response.answer_count.should eq(8)
     end
 
-    it "should parse additional txt records" do
+    it "should parse TXT records" do
       data = "00000000000100010000000116537461726c696e6720486f6d65204875622042333534045f686170045f746370056c6f63616c0000108001c00c0010000100001194004d0463233d370466663d301469643d30363a35423a32413a39373a32463a35310b6d643d486f6d65204875620670763d312e310473233d310473663d300463693d320b73683d4233693756673d3d00002905a00000119400120004000e00bfbaca338c166a6e995dfd47fd763d312e310473233d310473663d300463693d320b73683d67344f792f513d3dc05900018001000000640004c0"
       io = IO::Memory.new(data.hexbytes)
       response = io.read_bytes(Message).set_io(io)
 
       response.answers[0].domain_name.should eq "Starling Home Hub B354._hap._tcp.local"
-      puts response.additional[0].raw_ttl
-      puts response.additional[0].option.inspect
+      response.answers[0].payload.should eq(["c#=7", "ff=0", "id=06:5B:2A:97:2F:51", "md=Home Hub", "pv=1.1", "s#=1", "sf=0", "ci=2", "sh=B3i7Vg=="])
+    end
+
+    it "should parse SRV records" do
+      data = Bytes[0, 0, 0, 0, 126, 242, 13, 83, 116, 101, 118, 101, 115, 45, 105, 80, 104, 111, 110, 101, 192, 76]
+      service = IO::Memory.new(data).read_bytes(RR::Service)
+      service.port.should eq(32498)
+      service.priority.should eq(0)
+      service.weight.should eq(0)
+      service.domain_name.should eq("Steves-iPhone")
     end
   end
 end

@@ -1,4 +1,4 @@
-module MDNS
+module MDNS::RR
   # described by https://tools.ietf.org/html/rfc2671
   class Option < BinData
     endian big

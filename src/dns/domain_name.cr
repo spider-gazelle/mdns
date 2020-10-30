@@ -40,19 +40,13 @@ module MDNS
     end
   end
 
-  # The list of components that make up a domain name
-  class DomainNamePointer < BinData
-    endian big
-
+  module DomainNameHelpers
     property original_io : IO::Memory? = nil
 
-    variable_array raw_domain_name : DomainNameComponent, read_next: ->{
-      if name = raw_domain_name[-1]?
-        name.read_next?
-      else
-        true
-      end
-    }
+    def set_io(io : IO::Memory?)
+      @original_io = io
+      self
+    end
 
     # will work with compressed versions
     def domain_name
@@ -73,5 +67,20 @@ module MDNS
       self.raw_domain_name << DomainNameComponent.new
       name
     end
+  end
+
+  # The list of components that make up a domain name
+  class DomainNamePointer < BinData
+    endian big
+
+    variable_array raw_domain_name : DomainNameComponent, read_next: ->{
+      if name = raw_domain_name[-1]?
+        name.read_next?
+      else
+        true
+      end
+    }
+
+    include DomainNameHelpers
   end
 end

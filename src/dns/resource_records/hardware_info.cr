@@ -1,4 +1,4 @@
-module MDNS
+module MDNS::RR
   class HardwareInfo < BinData
     endian big
 
