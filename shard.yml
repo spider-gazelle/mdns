@@ -1,10 +1,10 @@
 name: mDNS
-version: 1.0.0
+version: 1.0.1
+crystal: ">= 0.36.1"
 
 dependencies:
   bindata:
     github: spider-gazelle/bindata
-    version: ~> 1.6
 
 development_dependencies:
   ameba:
