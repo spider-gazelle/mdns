@@ -148,3 +148,5 @@ loop do
 end
 
 ```
+
+See the [example](https://github.com/spider-gazelle/mdns/tree/master/examples) for how to register a service on your local network.
