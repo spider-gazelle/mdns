@@ -7,6 +7,7 @@ class MDNS::Server
   # Usage: `MDNS::Server.new(MDNS::IPv4)`
   def initialize(@address : Socket::IPAddress, buffer_size = 16, loopback = false, hops = 255)
     @socket = UDPSocket.new @address.family
+    @socket.reuse_address = true
     @socket.reuse_port = true
     @socket.bind(@address.family.inet? ? Socket::IPAddress::UNSPECIFIED : Socket::IPAddress::UNSPECIFIED6, @address.port)
     @socket.join_group(@address)
