@@ -1,6 +1,7 @@
 FROM 84codes/crystal:latest-alpine as build
 WORKDIR /app
 RUN mkdir -p /app/bin
+RUN mkdir -p /app/deps
 
 # Create a non-privileged user, defaults are appuser:10001
 ARG IMAGE_UID="10001"
@@ -24,7 +25,7 @@ RUN apk add \
   --no-cache \
     git
 
-RUN git clone https://github.com/spider-gazelle/mdns
+RUN git clone https://github.com/spider-gazelle/mdns.git
 WORKDIR /app/mdns
 RUN shards update --ignore-crystal-version --skip-postinstall --skip-executables
 
