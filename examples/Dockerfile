@@ -9,7 +9,7 @@ RUN apk add \
   --no-cache \
     git
 
-RUN git clone https://github.com/spider-gazelle/mdns.git
+RUN git clone https://github.com/spider-gazelle/mdns
 WORKDIR /app/mdns
 RUN shards update --ignore-crystal-version --skip-postinstall --skip-executables
 
@@ -41,4 +41,3 @@ COPY --from=build /app/bin /
 
 # Run the app
 ENTRYPOINT ["/query_responder"]
-CMD ["/query_responder"]
