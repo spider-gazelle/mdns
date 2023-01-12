@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  mdns:
+    build: .
+    restart: always
+    container_name: mdns
+    network_mode: "host"
+    environment:
+      DOMAIN_NAMES: myservice.local
+      IP_ADDRESS: "127.0.0.1"
