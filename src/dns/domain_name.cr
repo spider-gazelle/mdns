@@ -12,12 +12,12 @@ module MDNS
     end
 
     bit_field do
-      enum_bits 2, indicator : Indicator = Indicator::String
+      bits 2, indicator : Indicator = Indicator::String
       bits 6, :size, value: ->{ compressed? ? size : name.bytesize.to_u8 }
     end
 
-    uint8 :pointer_low, onlyif: ->{ compressed? }
-    string :name, length: ->{ compressed? ? 0 : size }
+    field pointer_low : UInt8, onlyif: ->{ compressed? }
+    field name : String, length: ->{ compressed? ? 0 : size }
 
     def read_next?
       size > 0_u8 && !compressed?
@@ -73,7 +73,7 @@ module MDNS
   class DomainNamePointer < BinData
     endian big
 
-    variable_array raw_domain_name : DomainNameComponent, read_next: ->{
+    field raw_domain_name : Array(DomainNameComponent), read_next: ->{
       if name = raw_domain_name[-1]?
         name.read_next?
       else

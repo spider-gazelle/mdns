@@ -3,9 +3,9 @@ module MDNS::RR
   class Option < BinData
     endian big
 
-    uint16 :code
-    uint16 :data_size, value: ->{ data.size.to_u8 }
-    bytes :data, length: ->{ data_size }
+    field code : UInt16
+    field data_size : UInt16, value: ->{ data.size.to_u8 }
+    field data : Bytes, length: ->{ data_size }
 
     property max_udp_payload : Int32 = 0
   end

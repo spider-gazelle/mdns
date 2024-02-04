@@ -3,8 +3,8 @@ module MDNS::RR
   class MailExchange < BinData
     endian big
 
-    uint16 :preference
-    variable_array raw_domain_name : DomainNameComponent, read_next: ->{
+    field preference : UInt16
+    field raw_domain_name : Array(DomainNameComponent), read_next: ->{
       if name = raw_domain_name[-1]?
         name.read_next?
       else

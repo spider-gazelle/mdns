@@ -7,12 +7,12 @@ module MDNS
   class Message < BinData
     endian big
 
-    uint16 :message_id
+    field message_id : UInt16
 
     bit_field do
       bool :is_response, default: false
 
-      enum_bits 4, operation_code : OperationCode = OperationCode::Query
+      bits 4, operation_code : OperationCode = OperationCode::Query
       bool :authoritative_answer, default: false
       bool :truncation, default: false
       bool :recursion_desired, default: true
@@ -20,18 +20,18 @@ module MDNS
 
       # Should always be 0
       bits 3, :reserved, value: ->{ 0_u8 }
-      enum_bits 4, response_code : ResponseCode = ResponseCode::NoError
+      bits 4, response_code : ResponseCode = ResponseCode::NoError
     end
 
-    uint16 :query_count, value: ->{ queries.size }
-    uint16 :answer_count, value: ->{ answers.size }
-    uint16 :name_server_count, value: ->{ name_servers.size }
-    uint16 :additional_record_count, value: ->{ additional.size }
+    field query_count : UInt16, value: ->{ queries.size }
+    field answer_count : UInt16, value: ->{ answers.size }
+    field name_server_count : UInt16, value: ->{ name_servers.size }
+    field additional_record_count : UInt16, value: ->{ additional.size }
 
-    array queries : Query, length: ->{ query_count }
-    array answers : Resource, length: ->{ answer_count }
-    array name_servers : Resource, length: ->{ name_server_count }
-    array additional : Resource, length: ->{ additional_record_count }
+    field queries : Array(Query), length: ->{ query_count }
+    field answers : Array(Resource), length: ->{ answer_count }
+    field name_servers : Array(Resource), length: ->{ name_server_count }
+    field additional : Array(Resource), length: ->{ additional_record_count }
 
     def query(domain : String, type : Type = Type::PTR, record_class : RecordClass = RecordClass::Internet, unicast_response : Bool = false)
       q = Query.new

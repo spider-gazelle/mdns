@@ -3,11 +3,11 @@ module MDNS::RR
   class Service < BinData
     endian big
 
-    uint16 :priority
-    uint16 :weight
-    uint16 :port
+    field priority : UInt16
+    field weight : UInt16
+    field port : UInt16
 
-    variable_array raw_domain_name : DomainNameComponent, read_next: ->{
+    field raw_domain_name : Array(DomainNameComponent), read_next: ->{
       if name = raw_domain_name[-1]?
         name.read_next?
       else

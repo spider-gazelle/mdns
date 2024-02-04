@@ -10,16 +10,16 @@ module MDNS
   class Resource < DomainNamePointer
     endian big
 
-    enum_field UInt16, type : Type = Type::A
+    field type : Type = Type::A
 
     bit_field do
       bool :flush_cache, default: false
       bits 15, record_class_raw, default: RecordClass::Internet.to_u16
     end
 
-    uint32 :raw_ttl
-    uint16 :data_size, value: ->{ data.size.to_u8 }
-    bytes :data, length: ->{ data_size }
+    field raw_ttl : UInt32
+    field data_size : UInt16, value: ->{ data.size.to_u8 }
+    field data : Bytes, length: ->{ data_size }
 
     def ttl
       raw_ttl.seconds

@@ -42,7 +42,7 @@ module MDNS
 
   # https://tools.ietf.org/html/rfc1035#section-3.2.2
   # https://en.wikipedia.org/wiki/List_of_DNS_record_types
-  enum Type
+  enum Type : UInt16
     MDNS       =  0
     A          =  1 # RFC 1035, Section 3.4.1
     NS         =  2 # RFC 1035, Section 3.3.11
